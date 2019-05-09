@@ -1,5 +1,5 @@
 {
-  "name": "loopback-mixin-paginator",
+  "name": "loopback-paginator-mixin",
   "version": "2.0.1",
   "description": "Pagination mixin for LoopBack.",
   "main": "lib/index.js",
@@ -29,7 +29,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/louie007/loopback-mixin-paginator"
+    "url": "https://github.com/louie007/loopback-paginator-mixin"
   },
   "devDependencies": {
     "@babel/cli": "7.2.3",
