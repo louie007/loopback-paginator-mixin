@@ -48,7 +48,8 @@ To use with your models just add `Paginator: true` to `mixins` in your model con
     "Paginator": {
       "limit": 5,         // items per page, default: 10
       "maxLimit": 60,     // max items per page, default: 100
-      "noMaxLimit": true  // only use this, if you know what you are doing!
+      "noMaxLimit": true, // only use this, if you know what you are doing!
+      "firstPage": true   // paginate to page=1, by default
     }
   }
 }
@@ -59,6 +60,7 @@ To use with your models just add `Paginator: true` to `mixins` in your model con
 * `limit` is the default limit to be used for this model
 * `maxLimit` is the default maximum number of items per page for this model. As you can override the default limit using the [LoopBack limit filter](https://loopback.io/doc/en/lb3/Limit-filter.html) it might come in handy to set a maxLimit to prevent your API from being abused. The default is `100`.
 * `noMaxLimit` set to `true` will deactivate the `maxLimit`. Be careful!
+* `firstPage` set to `true` will paginate to page=1 (by default), set to `false` will return unpaginated results.
 
 ### Global Config
 
@@ -67,9 +69,10 @@ It is also possible to configure the mixin globally in your `config.json`. Just 
 ```javascript
 {
   "paginator": {
-    "limit": 20,       // items per page, default: 10
-    "maxLimit": 300,   // max items per page, default: 100
-    "noMaxLimit": true // only use this, if you know what you are doing!
+    "limit": 20,        // items per page, default: 10
+    "maxLimit": 300,    // max items per page, default: 100
+    "noMaxLimit": true, // only use this, if you know what you are doing!
+    "firstPage": true   // paginate to page=1, by default
   }
 }
 ```
@@ -79,6 +82,7 @@ It is also possible to configure the mixin globally in your `config.json`. Just 
 * `limit` is the default limit to be used globally
 * `maxLimit` is the default maximum number of items per page globally. As you can override the default limit using the [LoopBack limit filter](https://loopback.io/doc/en/lb3/Limit-filter.html) it might come in handy to set a maxLimit to prevent your API from being abused. The global default is `100`.
 * `noMaxLimit` set to `true` will deactivate the `maxLimit`. Be careful!
+* `firstPage` set to `true` will paginate by default to page=1 (by default), set to `false` will return unpaginated results.
 
 ## Usage
 
