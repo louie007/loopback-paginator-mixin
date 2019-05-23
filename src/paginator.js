@@ -32,6 +32,8 @@ export default async (Model, options = {}) => {
     } else {
       page = context.req.query.page || page;
     }
+
+    context.req.query.page = page;
     context.args.filter = modifyFilter(context.args.filter, page);
   });
 
