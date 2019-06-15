@@ -1,6 +1,6 @@
 {
   "name": "loopback-paginator-mixin",
-  "version": "2.1.0",
+  "version": "2.1.2",
   "description": "Pagination mixin for LoopBack.",
   "main": "lib/index.js",
   "scripts": {

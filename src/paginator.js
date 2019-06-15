@@ -45,7 +45,17 @@ export default async (Model, options = {}) => {
 
         const limit = getLimit(context.args.filter);
         const where = context.args.filter.where || null;
-        const totalItemCount = context.args.filter.totalItemCount === undefined ? await Model.count(where) : context.args.filter.totalItemCount;
+        let totalItemCount = 0;
+        // If the totalItemCount value has never been set, we have to count the total number
+        if (context.args.filter.totalItemCount === undefined) {
+          // During the registration of a remote method, if the returns is an array,
+          // we have to set `returns.type` as ['modelName'],
+          // e.g. for an array of books the `returns.type` will be ['Book'],
+          // and this is very common for remote methods like Find, Search or HasMany.
+          totalItemCount = await app.models[context.resultType[0]].count(where);
+        } else {
+          totalItemCount = toNumber(context.args.filter.totalItemCount);
+        }
         const totalPageCount = Math.ceil(totalItemCount / limit);
         const currentPage = parseInt(context.req.query.page) || 1;
         const previousPage = currentPage - 1;
