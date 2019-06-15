@@ -1,6 +1,6 @@
 {
   "name": "loopback-paginator-mixin",
-  "version": "2.0.4",
+  "version": "2.1.0",
   "description": "Pagination mixin for LoopBack.",
   "main": "lib/index.js",
   "scripts": {
@@ -15,7 +15,8 @@
       "url": "https://www.manuel-heidrich.com"
     },
     {
-      "name": "Louis Bao"
+      "name": "Louis Bao",
+      "email": "louis.bao@icloud.com"
     },
     {
       "name": "prototype.berlin GmbH",

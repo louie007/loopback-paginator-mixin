@@ -45,7 +45,7 @@ export default async (Model, options = {}) => {
 
         const limit = getLimit(context.args.filter);
         const where = context.args.filter.where || null;
-        const totalItemCount = context.args.filter.totalItemCount || await Model.count(where);
+        const totalItemCount = context.args.filter.totalItemCount === undefined ? await Model.count(where) : context.args.filter.totalItemCount;
         const totalPageCount = Math.ceil(totalItemCount / limit);
         const currentPage = parseInt(context.req.query.page) || 1;
         const previousPage = currentPage - 1;

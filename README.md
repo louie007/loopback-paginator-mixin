@@ -25,6 +25,7 @@ With [loopback-boot@v2.8.0](https://github.com/strongloop/loopback-boot/) [mixin
   }
 }
 ```
+
 ### Model Config
 
 To use with your models just add `Paginator: true` to `mixins` in your model config and the default options will be used:
@@ -50,19 +51,19 @@ To use with your models just add `Paginator: true` to `mixins` in your model con
       "maxLimit": 60,     // max items per page, default: 100
       "noMaxLimit": true, // only use this, if you know what you are doing!
       "firstPage": true,  // paginate to page=1, by default
-      "methods" : ['find', 'search'] // remote methods applaying paginator hooks
+      "methods" : ['find', 'search', 'prototype.__get__books'] // remote methods applaying paginator hooks
     }
   }
 }
 ```
 
-#### limit and maxLimit
+#### Model Config Options
 
 * `limit` is the default limit to be used for this model
 * `maxLimit` is the default maximum number of items per page for this model. As you can override the default limit using the [LoopBack limit filter](https://loopback.io/doc/en/lb3/Limit-filter.html) it might come in handy to set a maxLimit to prevent your API from being abused. The default is `100`.
 * `noMaxLimit` set to `true` will deactivate the `maxLimit`. Be careful!
-* `firstPage` set to `true` will paginate to page=1 (by default), set to `false` will return unpaginated results.
-* `methods` are remote methods which are planning to apply paginator hooks. The default method is ['find'], any other methods have to be used with a `filter.totalItemCount` number.
+* `firstPage` set to `true` will paginate by default to page=1 (by default), set to `false` will return unpaginated results.
+* `methods` are remote methods which are planning to apply paginator hooks. The default applied method is ['find'].
 
 ### Global Config
 
@@ -75,18 +76,18 @@ It is also possible to configure the mixin globally in your `config.json`. Just 
     "maxLimit": 300,    // max items per page, default: 100
     "noMaxLimit": true, // only use this, if you know what you are doing!
     "firstPage": true,  // paginate to page=1, by default
-    "methods" : ['find', 'search'] // remote methods applaying paginator hooks
+    "methods" : ['find', 'search', 'prototype.__get__books'] // remote methods applaying paginator hooks
   }
 }
 ```
 
-#### limit and maxLimit
+#### Global Config Options
 
 * `limit` is the default limit to be used globally
 * `maxLimit` is the default maximum number of items per page globally. As you can override the default limit using the [LoopBack limit filter](https://loopback.io/doc/en/lb3/Limit-filter.html) it might come in handy to set a maxLimit to prevent your API from being abused. The global default is `100`.
 * `noMaxLimit` set to `true` will deactivate the `maxLimit`. Be careful!
 * `firstPage` set to `true` will paginate by default to page=1 (by default), set to `false` will return unpaginated results.
-* `methods` are remote methods which are planning to apply paginator hooks. The default method is ['find'], any other methods have to be used with a `filter.totalItemCount` number.
+* `methods` are remote methods which are planning to apply paginator hooks. The default applied method is ['find'].
 
 ## Usage
 
@@ -122,7 +123,15 @@ When Paginator is added to a model and the `page` query parameter is present (e.
 }
 ```
 
-The `methods` option's default value is `['find']`, any other methods have to be used with a `filter.totalItemCount` number, for exmaple:
+The `methods` option's default value is `['find']`, some methods defined by relationship in Model.json file will also apply these mixin hooks.
+
+For exmaple, if an user has many books, by defining the relationship in JSON file, Loopback will add an instance remote method `prototype.__get__books` for you. You can just add this method in the `methods` array, the Paginator will work without any other configuration.
+
+```json
+"methods" : ["find", "prototype.__get__books"]
+```
+
+If the method you are defining is a customized remote method like `search`, then you will have to provide the `totalItemCount` value to make the pagination works, here is an working exmaple:
 
 ```javascript
 // Node.js util
@@ -130,19 +139,30 @@ const util = require('util');
 
 // A full-text search remote method
 MyModel.search = async (keyword, filter, options) => {
-  const connector = FactDisease.dataSource.connector;
+  const connector = MyModel.dataSource.connector;
 
-  let sql = "select * from my_model where MATCH " +
-    "(name, description, comment) " +
-    "AGAINST (? IN NATURAL LANGUAGE MODE)"
+  const sql = 'select * from MyModel where MATCH ' +
+    '(name, description, comment) ' +
+    'AGAINST (? IN NATURAL LANGUAGE MODE) order by name desc limit ?,?';
+
+  const countSql = 'select count(*) as rowCount from MyModel where MATCH ' +
+    '(name, description, comment) ' +
+    'AGAINST (? IN NATURAL LANGUAGE MODE)';
 
   const executeAsync = util.promisify(connector.execute).bind(connector);
-  let rows = await executeAsync(sql, [keyword]);
+  const countResult = await executeAsync(countSql, [keyword]);
 
-  // Set totalItemCount value for Paginator
-  filter.totalItemCount = rows.length;
-
-  return rows;
+  if (countResult[0] &&
+    countResult[0]['rowCount'] &&
+    countResult[0]['rowCount'] > 0) {
+    const rows = await executeAsync(sql, [keyword, filter['skip'], filter['limit']]);
+    // Set totalItemCount value for Paginator
+    filter.totalItemCount = countResult[0]['rowCount'];
+    return rows;
+  } else {
+    filter.totalItemCount = 0;
+    return [];
+  }
 };
 
 MyModel.remoteMethod('search', {
@@ -167,17 +187,3 @@ MyModel.remoteMethod('search', {
 ## License
 
 [MIT](LICENSE)
-
-## Changelog
-
-### v2.0.0
-- Breaking change: node >=8.0.0 is required!
-- Breaking change: omitting the page parameter no longer defaults to page=1, it now returns unpaginated results
-
-### v1.0.0
-- Allow to override limit with the LoopBack limit filter
-- Add `maxLimit` option
-- Add `noMaxLimit` option
-
-### v0.9.6
-- Add global config
