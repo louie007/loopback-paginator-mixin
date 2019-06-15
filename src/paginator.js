@@ -54,7 +54,7 @@ export default async (Model, options = {}) => {
           // and this is very common for remote methods like Find, Search or HasMany.
           totalItemCount = await app.models[context.resultType[0]].count(where);
         } else {
-          totalItemCount = toNumber(context.args.filter.totalItemCount);
+          totalItemCount = parseInt(context.args.filter.totalItemCount);
         }
         const totalPageCount = Math.ceil(totalItemCount / limit);
         const currentPage = parseInt(context.req.query.page) || 1;
